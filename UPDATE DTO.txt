@@ -1,0 +1,67 @@
+
+
+								<< UPDATE DTO >> 
+public ServiceResponse updateV2(UpdateDTO updateDTO) {
+
+        List<Long> contactIds = updateDTO.getDtoList().stream().map(ProgressUpdateDTO::getContactUserId).collect(Collectors.toList());
+        List<ProgressUpdateDTO> progressUpdateDTOS = taskDiaryDAO.findByIdAndNameV2(contactIds);
+        Map<Long, String> contactUserByName = progressUpdateDTOS.stream().collect(Collectors.toMap(ProgressUpdateDTO::getContactUserId, ProgressUpdateDTO::getFullName));
+
+        for (ProgressUpdateDTO updateProgress : updateDTO.getDtoList()) {
+            TaskDiaryBO taskDiaryBO = progressUpdateDAO.findByIdCustom(updateProgress.getTaskDiaryId());
+            taskDiaryBO.setUnitIdea(updateProgress.getUnitIdea());
+            taskDiaryBO.setStatus(updateProgress.getStatus());
+            taskDiaryBO.setContactUserId(updateProgress.getContactUserId());
+            taskDiaryBO.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            progressUpdateDAO.save(taskDiaryBO);
+        }
+
+        for (ProgressUpdateDTO update : updateDTO.getDtoList()) {
+            update.setFullName(contactUserByName.get(update.getContactUserId()));
+        }
+
+        for (UserDTO updateUser : updateDTO.getUserDTOS()) {
+            updateUser.setId(updateUser.getId());
+            updateUser.setUserName(updateUser.getUserName());
+            updateUser.setEmployeeId(updateUser.getEmployeeId());
+            updateUser.setEmployeeCode(updateUser.getEmployeeCode());
+            updateUser.setFullName(updateUser.getFullName());
+            updateUser.setEmail(updateUser.getEmail());
+        }
+        return RESPONSE_SUCCESS(updateDTO);
+    }	
+	
+	
+	
+																		<< UPDATE DTO VERSION 2	>>
+    @Override
+    public ServiceResponse updateV2(UpdateDTO updateDTO) {
+
+        List<Long> contactIds = new ArrayList<>();
+        for (ProgressUpdateDTO updateProgress : updateDTO.getDtoList()){
+            TaskDiaryBO taskDiaryBO = progressUpdateDAO.findByIdCustom(updateProgress.getTaskDiaryId());
+            taskDiaryBO.setUnitIdea(updateProgress.getUnitIdea());
+            taskDiaryBO.setStatus(updateProgress.getStatus());
+            taskDiaryBO.setContactUserId(updateProgress.getContactUserId());
+            taskDiaryBO.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            progressUpdateDAO.save(taskDiaryBO);
+            contactIds.add(updateProgress.getContactUserId());
+        }
+        List<ProgressUpdateDTO> progressUpdateDTOS = taskDiaryDAO.findByIdAndNameV2(contactIds);
+        Map<Long,String> contactUserByName = progressUpdateDTOS.stream().collect(Collectors.toMap(ProgressUpdateDTO::getContactUserId, ProgressUpdateDTO::getFullName));
+        for (ProgressUpdateDTO update : updateDTO.getDtoList()){
+            update.setFullName(contactUserByName.get(update.getContactUserId()));
+        }
+
+        for (UserDTO updateUser: updateDTO.getUserDTOS()){
+            updateUser.setId(updateUser.getId());
+            updateUser.setUserName(updateUser.getUserName());
+            updateUser.setEmployeeId(updateUser.getEmployeeId());
+            updateUser.setEmployeeCode(updateUser.getEmployeeCode());
+            updateUser.setFullName(updateUser.getFullName());
+            updateUser.setEmail(updateUser.getEmail());
+        }
+        return RESPONSE_SUCCESS(updateDTO);
+    }
+																		
+	

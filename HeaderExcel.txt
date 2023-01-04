@@ -1,0 +1,62 @@
+private void mergeAndCenter(Cell startCell, CellRangeAddress range) {
+        startCell.getSheet().addMergedRegion(range);
+        CellStyle style = startCell.getSheet().getWorkbook().createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        startCell.setCellStyle(style);
+    }
+
+
+    private void writeHeaderLine(String tableName, List<TtktIssueColumn> columnList,String from, String to) {
+        sheet = workbook.createSheet(tableName);
+        //set title
+        Row titleRow = sheet.createRow(0);
+        Cell titleCell = titleRow.createCell(0);
+        titleRow.createCell(0);
+        XSSFCellStyle titleStyle = workbook.createCellStyle();
+        XSSFFont titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontName("Times New Roman");
+        titleFont.setFontHeight(12);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        titleStyle.setFont(titleFont);
+        titleStyle.setWrapText(true);
+        titleRow.setRowStyle(titleStyle);
+        String title = "Chi tiết dữ liệu lấy về hệ thống từ TT CSKH ";
+        if(from != null) title += "Từ ngày " + from + " ";
+        if(to != null) title += "Đến ngày " + to + " ";
+        titleCell.setCellValue(title);
+        this.mergeAndCenter(titleCell,new CellRangeAddress(0,0,0,columnList.size()));
+        titleCell.setCellStyle(titleStyle);
+        Row titleEmpty = sheet.createRow(1);
+        Cell emptyCell = titleEmpty.createCell(0);
+        this.mergeAndCenter(emptyCell,new CellRangeAddress(1,1,0,columnList.size()));
+        Row row = sheet.createRow(2);
+        //set header
+        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        font.setFontName("Times New Roman");
+        font.setFontHeight(12);
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+        style.setFillForegroundColor(new XSSFColor(new java.awt.Color(153, 204, 255)));
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        //create column STT
+        sheet.setColumnWidth(0,5*256);
+        createCell(row,0,"STT",style,null);
+        for (int i = 0; i < columnList.size(); i++) {
+            sheet.setColumnWidth(i+1,26*256);
+            if (columnList.get(i) == null) {
+                createCell(row, i+1, " ", style,null);
+            } else {
+                createCell(row, i+1, columnList.get(i).getDescription(), style,null);
+            }
+        }
+    }

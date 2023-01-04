@@ -1,0 +1,67 @@
+TÁCH THÀNH TỪNG HÀM : 
+
+// Update Các bản ghi cập nhật tiến độ :
+
+    public void updateProgress (List<ProgressUpdateDTO> results) {
+        Set<Long> taskDiaryIds = new HashSet<>();
+        for (ProgressUpdateDTO progressUpdateDTO : results) {
+            taskDiaryIds.add(progressUpdateDTO.getTaskDiaryId());
+        }
+        List<TaskDiaryBO> list = progressUpdateDAO.findByIdCustom(taskDiaryIds);
+        Map<Long, TaskDiaryBO> taskDiaryIdByTaskDiaryBO = list.stream().collect(Collectors.toMap(TaskDiaryBO::getTaskDiaryId, x -> x));
+        for (ProgressUpdateDTO progressUpdateDTO : results) {
+            taskDiaryIdByTaskDiaryBO.get(progressUpdateDTO.getTaskDiaryId()).setUnitIdea(progressUpdateDTO.getUnitIdea());
+            taskDiaryIdByTaskDiaryBO.get(progressUpdateDTO.getTaskDiaryId()).setTaskId(progressUpdateDTO.getTaskId());
+            taskDiaryIdByTaskDiaryBO.get(progressUpdateDTO.getTaskDiaryId()).setContactUserId(progressUpdateDTO.getContactUserId());
+            taskDiaryIdByTaskDiaryBO.get(progressUpdateDTO.getTaskDiaryId()).setContactUserName(progressUpdateDTO.getContactUserName());
+            taskDiaryIdByTaskDiaryBO.get(progressUpdateDTO.getTaskDiaryId()).setStatus(progressUpdateDTO.getStatus());
+        }
+        progressUpdateDAO.saveAll(taskDiaryIdByTaskDiaryBO.values());
+    }
+
+
+// Update list user
+
+    public void updateUser(List<UserDTO> notificationUsers) {
+        List<Long> userIds = new ArrayList<>();
+        List<String> employeeCodes = new ArrayList<>();
+        for (UserDTO updateUser: notificationUsers) {
+            updateUser.setId(updateUser.getId());
+            updateUser.setUserName(updateUser.getUserName());
+            updateUser.setEmployeeId(updateUser.getEmployeeId());
+            updateUser.setEmployeeCode(updateUser.getEmployeeCode());
+            updateUser.setFullName(updateUser.getFullName());
+            updateUser.setEmail(updateUser.getEmail());
+            userIds.add(updateUser.getEmployeeId());
+            employeeCodes.add(updateUser.getEmployeeCode());
+        	}
+	}
+
+
+// Tạo các bản ghi trong bảng NOTIFICATION
+        Notification notification = new Notification();
+        notification.setName("Quy trình");
+        notification.setContent("Giao việc");
+        notification.setCreatedDate(new Date(System.currentTimeMillis()));
+        notification.setCreatedUser(CommonUtil.getUserLoginName());
+        notification.setTargetId(assignWorkDTO.getProgressUpdateList().get(0).getTaskId().toString());
+        notification.setType("assignwork");
+        notificationRepo.save(notification);
+
+// Tạo các bản ghi trong bảng USER_NOTIFICATION
+        List<UserNotification> userNotifications = new ArrayList<>();
+        for (String u : employeeCodes){
+            UserNotification userNotification = new UserNotification();
+            userNotification.setUserId(Long.parseLong(u));
+            userNotification.setNotificationId(notification.getId());
+            userNotification.setStatus(0);
+            userNotification.setCreatedDate(new Date(System.currentTimeMillis()));
+            userNotification.setCreatedUser(CommonUtil.getUserLoginName());
+            userNotifications.add(userNotification);
+        }
+        userNotificationDAO.saveAll(userNotifications);
+		
+		
+		
+		DataTableResults<NotificationDTO> results = notificationDAO.getListNotification(Long.parseLong(CommonUtil.getUserLoginName()), page, limit);
+//        results.getData().get(0).setTotalUnreadNotice(userNotificationDAO.totalUnreadNotice(Long.parseLong(CommonUtil.getUserLoginName())));
